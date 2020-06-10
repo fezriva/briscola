@@ -1,2 +1,2 @@
 # Briscola
-Un semplice programma in Python che permette all'utente di giocare contro il computer a briscola da terminale
+My attempt to create an AI which plays the famous card game Briscola against you
