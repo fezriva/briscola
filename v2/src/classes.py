@@ -49,3 +49,6 @@ class Player:
 
     def changeStarter(self, i):
         self.starter = i
+
+    def getName(self):
+        return self.name

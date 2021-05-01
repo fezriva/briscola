@@ -85,7 +85,9 @@ def game(players):
         # calculate winner and assign points
         i_winner, points = roundWinner(table, seme_briscola)
         players[i_winner].incrementPoints(points)
+        print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
         # reorder players list and give them a card each
         for i in range(i_winner):
             players.append(players.pop(0))
-        giveCards(deck, players)
+        if len(deck) > 0:
+            giveCards(deck, players)
