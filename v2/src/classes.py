@@ -24,6 +24,9 @@ class Card:
     def getPoints(self):
         return self.points
 
+    def getValue(self):
+        return self.value
+
     def __str__(self):
         return str(self.value) + ' di ' + self.color
 

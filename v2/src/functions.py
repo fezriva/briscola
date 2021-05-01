@@ -64,6 +64,14 @@ def roundWinner(table, seme_briscola):
 def game(players):
     # create new deck and shuffle it
     deck = newDeck()
+
+    # take out one 2 if there are three players
+    if len(players) == 3:
+        for i, card in enumerate(deck):
+            if card.getValue() == 2:
+                deck.pop(i)
+                break
+
     # setup the game
     # give the cards to the players
     for i in range(3):
@@ -73,9 +81,10 @@ def game(players):
     seme_briscola = briscola.getColor()
     deck.append(briscola)
 
+    rounds = len(deck) / len(players)
     # start game turns
     # for now while True, maybe change it later
-    while(True):
+    while rounds > 0:
         # create empty table
         table = []
         # make each player make his choice
@@ -91,3 +100,15 @@ def game(players):
             players.append(players.pop(0))
         if len(deck) > 0:
             giveCards(deck, players)
+        # decrease rounds value
+        rounds -= 1
+    # check game winner -- ADD TEAMS OPTION
+    for i, player in enumerate(players):
+        if i == 0:
+            higher = player
+            winner = i
+        else:
+            if player.getPoints() > higher.getPoints():
+                higher = player
+                winner = i
+    print('The winner is {} with {} staggering points'.format(players[winner].getName, players[winner].getPoints))
