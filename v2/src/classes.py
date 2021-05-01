@@ -18,8 +18,11 @@ class Card:
         else:
             self.points = 0
 
-    def whichColor(self):
+    def getColor(self):
         return self.color
+
+    def getPoints(self):
+        return self.points
 
     def __str__(self):
         return str(self.value) + ' di ' + self.color
@@ -41,9 +44,8 @@ class Player:
     def handCard(card):
         self.hand.append(card)
 
-    def incrementPoints(self, cards):
-        for card in cards:
-            self.points = self.points + card.points
+    def incrementPoints(self, points):
+        self.points += points
 
     def changeStarter(self, i):
         self.starter = i
