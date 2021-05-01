@@ -4,6 +4,19 @@ class Card:
     def __init__(self, value, color):
         self.value = value
         self.color = color
+        # assign points to each value
+        if self.value == 1:
+            self.points = 11
+        elif self.value == 3:
+            self.points = 10
+        elif self.value == 8:
+            self.points = 2
+        elif self.value == 9:
+            self.points = 3
+        elif self.value == 10:
+            self.points = 4
+        else:
+            self.points = 0
 
     def whichColor(self):
         return self.color
@@ -19,6 +32,7 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
+        # to know if the player uses the AI
         if self.name.upper() == 'PC':
             self.ai = 1
         else:
@@ -29,7 +43,7 @@ class Player:
 
     def incrementPoints(self, cards):
         for card in cards:
-            self.points = self.points + card.value
+            self.points = self.points + card.points
 
     def changeStarter(self, i):
         self.starter = i

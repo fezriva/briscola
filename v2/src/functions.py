@@ -1,5 +1,4 @@
-from random import shuffle
-
+import classes
 
 # create deck of cards
 def newDeck():
@@ -25,3 +24,26 @@ def gameStart():
     deck.append(briscola)
 
     return deck, seme_briscola
+
+# let the current player make is move
+# return the chosen card
+def move(player, table):
+    if player.ai == 0:
+        if len(table) != 0:
+            print('Table:')
+            for card in table:
+                print(str(card))
+            print()
+        print('Hand:')
+        for i, card in enumerate(player.hand):
+            print('{}. {}'.format(i+1, str(card)))
+        print()
+        num = 4
+        while num > 3:
+            num = int(input('Select a card from your hand? (1/2/3) '))
+        choice = player.hand.pop(num-1)
+    elif player.ai == 1:
+        # here will be the code for the MCTS powered AI
+        # for now random choice
+        choice = choice(player.hand)
+    return choice
