@@ -60,8 +60,20 @@ def roundWinner(table, seme_briscola):
         round_points += card.getPoints()
     return card_number, round_points
 
+### CHECK HOW TO PROPERLY CREATE RANKING IN PYTHON
+def finalRanking(teams):
+    ranking = []
+    for team in teams:
+        i = 0
+        while i < len(ranking):
+            if team.getPoints() > ranking[i].getPoints():
+                break;
+            i += 1
+        ranking.insert(i, team)
+    return ranking
+
 # central function, controls the game flow
-def game(players):
+def game(teams, players):
     # create new deck and shuffle it
     deck = newDeck()
 
@@ -93,7 +105,7 @@ def game(players):
             table.append(choice)
         # calculate winner and assign points
         i_winner, points = roundWinner(table, seme_briscola)
-        players[i_winner].incrementPoints(points)
+        players[i_winner].getTeam().incrementPoints(points)
         print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
         # reorder players list and give them a card each
         for i in range(i_winner):
@@ -102,13 +114,15 @@ def game(players):
             giveCards(deck, players)
         # decrease rounds value
         rounds -= 1
-    # check game winner -- ADD TEAMS OPTION
-    for i, player in enumerate(players):
-        if i == 0:
-            higher = player
-            winner = i
-        else:
-            if player.getPoints() > higher.getPoints():
-                higher = player
-                winner = i
-    print('The winner is {} with {} staggering points'.format(players[winner].getName, players[winner].getPoints))
+
+    # final ranking and winner declaration
+    ranking = finalRanking(teams)
+
+    for i, team in enumerate(ranking):
+        print('{}. {}'.format(i+1, str(team))
+
+    if ranking[0].getPoints() == ranking[1].getPoints():
+        print('The game resulted in a tie')
+    else:
+        ranking[0].teamWins()
+        print('{} won, congratulations!'.format(team.getName()))

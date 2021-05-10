@@ -30,14 +30,50 @@ class Card:
     def __str__(self):
         return str(self.value) + ' di ' + self.color
 
+# class team to store points
+class Team:
+    players = []
+    points = 0
+    wins = 0
+
+    def __init__(self, team):
+        self.name = 'Team ' + str(team)
+
+    def addPlayer(self, player):
+        self.players.append(player)
+
+    def incrementPoints(self, points):
+        self.points += points
+
+    def teamWins(self):
+        self.wins += 1
+
+    def getPoints(self):
+        return self.points
+
+    def getPlayers(self):
+        return self.players
+
+    def getName(self):
+        return self.name
+
+    def __str__(self):
+        pl_str = ''
+        for i, player in enumerate(self.players):
+            if i != 0:
+                pl_str += ', '
+            pl_str += player.getName()
+        final_str = self.name + ':\n\tPlayers: ' + pl_str + '\n\tPoints: ' + self.points
+        return final_str
+
+
 # class player
 class Player:
-    starter = 0
-    points = 0
 
-    def __init__(self, name):
+    def __init__(self, name, team):
         self.name = name
         self.hand = []
+        self.team = team
         # to know if the player uses the AI
         if self.name.upper() == 'PC':
             self.ai = 1
@@ -47,11 +83,8 @@ class Player:
     def handCard(card):
         self.hand.append(card)
 
-    def incrementPoints(self, points):
-        self.points += points
-
-    def changeStarter(self, i):
-        self.starter = i
-
     def getName(self):
         return self.name
+
+    def getTeam(self):
+        return self.team

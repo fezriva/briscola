@@ -11,15 +11,28 @@ if gioco.lower() == 'y':
     print('\nGood luck!\n\n')
 
     players_number = int(input('How many players? '))
+    team = 0
+    if players_number == 4:
+        want_teams = input('Do you want to play teams? (y/n) ')
+    teams = []
     players = []
 
     for i in range(players_number):
-        name = input('Player {} name is: '.format(i+1))
-        players[i] = Player(name)
+        if want_teams == 'y':
+            team = team % 2 # assign team
+            print('Next player will be in team {}'.format(team + 1))
+
+        if team != team.getTeam():
+            teams[team] = Team(team)
+
+        name = input('Player {} name is: '.format(i + 1))
+        players[i] = Player(name,team)
+        team.addPlayer(player[i])
+        team += 1
 
     while gioco.lower() == 'y':
         # call the game function
-        game(players)
+        game(teams, players)
 
         print("\n")
         gioco = input('Want to play again? (y/n) ')
