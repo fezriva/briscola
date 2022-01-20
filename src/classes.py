@@ -80,7 +80,7 @@ class Player:
         else:
             self.ai = 0
 
-    def handCard(card):
+    def handCard(self, card):
         self.hand.append(card)
 
     def getName(self):

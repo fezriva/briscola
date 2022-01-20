@@ -27,7 +27,7 @@ if gioco.lower() == 'y':
 
         name = input('Player {} name is: '.format(i + 1))
         players[i] = Player(name,team)
-        team.addPlayer(player[i])
+        team.addPlayer(players[i])
         team += 1
 
     while gioco.lower() == 'y':

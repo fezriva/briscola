@@ -1,5 +1,5 @@
-from random import shuffle, choice
-import classes
+from random import shuffle, choices
+from classes import *
 
 # create deck of cards
 def newDeck():
@@ -32,7 +32,7 @@ def move(player, table):
     elif player.ai == 1:
         # here will be the code for the MCTS powered AI
         # for now random choice
-        choice = choice(player.hand)
+        choice = choices(player.hand)
     return choice
 
 # calculate which players wins the round and how many points he/she gets
@@ -119,7 +119,7 @@ def game(teams, players):
     ranking = finalRanking(teams)
 
     for i, team in enumerate(ranking):
-        print('{}. {}'.format(i+1, str(team))
+        print('{}. {}'.format(i+1, str(team)))
 
     if ranking[0].getPoints() == ranking[1].getPoints():
         print('The game resulted in a tie')
