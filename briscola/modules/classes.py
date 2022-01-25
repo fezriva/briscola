@@ -4,6 +4,7 @@ class Card:
     def __init__(self, value, color):
         self.value = value
         self.color = color
+        
         # assign points to each value
         if self.value == 1:
             self.points = 11
@@ -74,6 +75,7 @@ class Player:
         self.name = name
         self.hand = []
         self.team = team
+
         # to know if the player uses the AI
         if self.name.upper() == 'PC':
             self.ai = 1
