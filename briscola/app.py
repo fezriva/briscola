@@ -1,5 +1,5 @@
-from functions import *
-from classes import *
+import modules.game as game
+import modules.classes as classes
 
 print('\n\nHello!')
 
@@ -23,16 +23,16 @@ if gioco.lower() == 'y':
             print('Next player will be in team {}'.format(team + 1))
 
         if team != team.getTeam():
-            teams[team] = Team(team)
+            teams[team] = classes.Team(team)
 
         name = input('Player {} name is: '.format(i + 1))
-        players[i] = Player(name,team)
+        players[i] = classes.Player(name,team)
         team.addPlayer(players[i])
         team += 1
 
     while gioco.lower() == 'y':
         # call the game function
-        game(teams, players)
+        game.main(teams, players)
 
         print("\n")
         gioco = input('Want to play again? (y/n) ')

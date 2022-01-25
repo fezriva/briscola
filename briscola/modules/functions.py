@@ -1,10 +1,10 @@
 from random import shuffle, choices
-from classes import *
+import classes
 
 # create deck of cards
 def newDeck():
     colors = ['cuori', 'picche', 'quadri', 'fiori']
-    deck = [Card(value, color) for value in range(1, 10) for color in colors]
+    deck = [classes.Card(value, color) for value in range(1, 10) for color in colors]
     shuffle(deck)
     return deck
 
@@ -38,6 +38,7 @@ def move(player, table):
 # calculate which players wins the round and how many points he/she gets
 def roundWinner(table, seme_briscola):
     round_points = 0
+    
     # iterate through cards
     for i, card in enumerate(table):
         if i == 0:
@@ -71,58 +72,3 @@ def finalRanking(teams):
             i += 1
         ranking.insert(i, team)
     return ranking
-
-# central function, controls the game flow
-def game(teams, players):
-    # create new deck and shuffle it
-    deck = newDeck()
-
-    # take out one 2 if there are three players
-    if len(players) == 3:
-        for i, card in enumerate(deck):
-            if card.getValue() == 2:
-                deck.pop(i)
-                break
-
-    # setup the game
-    # give the cards to the players
-    for i in range(3):
-        giveCards(deck, players)
-    # take the briscola card and place it under the deck
-    briscola = deck.pop(0)
-    seme_briscola = briscola.getColor()
-    deck.append(briscola)
-
-    rounds = len(deck) / len(players)
-    # start game turns
-    # for now while True, maybe change it later
-    while rounds > 0:
-        # create empty table
-        table = []
-        # make each player make his choice
-        for player in players:
-            choice = move(player, table)
-            table.append(choice)
-        # calculate winner and assign points
-        i_winner, points = roundWinner(table, seme_briscola)
-        players[i_winner].getTeam().incrementPoints(points)
-        print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
-        # reorder players list and give them a card each
-        for i in range(i_winner):
-            players.append(players.pop(0))
-        if len(deck) > 0:
-            giveCards(deck, players)
-        # decrease rounds value
-        rounds -= 1
-
-    # final ranking and winner declaration
-    ranking = finalRanking(teams)
-
-    for i, team in enumerate(ranking):
-        print('{}. {}'.format(i+1, str(team)))
-
-    if ranking[0].getPoints() == ranking[1].getPoints():
-        print('The game resulted in a tie')
-    else:
-        ranking[0].teamWins()
-        print('{} won, congratulations!'.format(team.getName()))
