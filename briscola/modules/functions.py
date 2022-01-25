@@ -1,38 +1,45 @@
 from random import shuffle, choices
+from briscola.modules import config
 import classes
 
 # create deck of cards
 def newDeck():
-    colors = ['cuori', 'picche', 'quadri', 'fiori']
+    colors = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
     deck = [classes.Card(value, color) for value in range(1, 10) for color in colors]
     shuffle(deck)
     return deck
 
+# give a card to a player
 def giveCards(deck, players):
     for player in players:
         player.handCard(deck.pop(0))
 
+# print a list of cards
+def printCards(location, cards):
+    print(location)
+    for i, card in enumerate(cards):
+        print('{}. {}'.format(i+1, str(card)))
+    print('\n')
+
 # let the current player make is move
 # return the chosen card
-def move(player, table):
-    if player.ai == 0:
-        if len(table) != 0:
-            print('Table:')
-            for card in table:
-                print(str(card))
-            print()
-        print('Hand:')
-        for i, card in enumerate(player.hand):
-            print('{}. {}'.format(i+1, str(card)))
-        print()
-        num = 4
-        while num > 3:
-            num = int(input('Select a card from your hand? (1/2/3) '))
-        choice = player.hand.pop(num-1)
-    elif player.ai == 1:
+def play(player, table):
+
+    if player.ai:
         # here will be the code for the MCTS powered AI
         # for now random choice
         choice = choices(player.hand)
+    else:
+        if config.CLI:
+            printCards('Table:', table)    
+            printCards('Hand:', player.hand)
+        
+            num = 3
+            while num not in range(3):
+                num = int(input('Select a card from your hand? (1/2/3) ')) - 1
+        
+        choice = player.hand.pop(num)
+
     return choice
 
 # calculate which players wins the round and how many points he/she gets
@@ -68,7 +75,7 @@ def finalRanking(teams):
         i = 0
         while i < len(ranking):
             if team.getPoints() > ranking[i].getPoints():
-                break;
+                break
             i += 1
         ranking.insert(i, team)
     return ranking
