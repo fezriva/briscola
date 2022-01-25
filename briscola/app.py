@@ -1,31 +1,45 @@
-import modules.game as game
 import modules.classes as classes
+import modules.config as config
+import modules.game as game
+import modules.cli as cli
 
-print('\n\nHello!')
+player_ready = 'n'
 
-gioco = input('Ready for a game of briscola? (y/n) ')
+if config.CLI:
+    player_ready = cli.welcome_message()
 
-if gioco.lower() == 'y':
-    print('Great!')
-    print('\nTo play against the PC you just need to call \'PC\' the player')
-    print('\nGood luck!\n\n')
+while player_ready == 'y':
 
-    players_number = int(input('How many players? '))
-    team = 0
-    if players_number == 4:
-        want_teams = input('Do you want to play teams? (y/n) ')
-    teams = []
     players = []
+    players_number = 0 # default
+    if config.CLI:
+        players_number = cli.players_number()
 
+    team = 0
+    teams = []
+    want_teams = 'n' # default
+    if players_number == 4:
+        if config.CLI:
+            want_teams = cli.teams()
+
+    # set players
     for i in range(players_number):
-        if want_teams == 'y':
-            team = team % 2 # assign team
-            print('Next player will be in team {}'.format(team + 1))
 
+        # assign a team to the new player
+        if want_teams == 'y':
+            team = team % 2
+            if config.CLI:
+                print('Team {}'.format(team+1))
+
+        # create the Team class
         if team != team.getTeam():
             teams[team] = classes.Team(team)
 
-        name = input('Player {} name is: '.format(i + 1))
+        # create player
+        name = ''
+        if config.CLI:
+            name = input('Team {} - Player {}\'s name: '.format(team, i + 1))
+        
         players[i] = classes.Player(name,team)
         team.addPlayer(players[i])
         team += 1
@@ -34,9 +48,11 @@ if gioco.lower() == 'y':
         # call the game function
         game.main(teams, players)
 
-        print("\n")
-        gioco = input('Want to play again? (y/n) ')
+        if config.CLI:
+            gioco = cli.new_game()
+
         if gioco.lower() == 'y':
             players.append(players.pop(0))
 
-print('Sad to see you go, but hope to see you soon!')
+if config.CLI:
+    print('\n\nSad to see you go, but hope to see you soon!')

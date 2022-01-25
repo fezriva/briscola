@@ -29,7 +29,7 @@ class Card:
         return self.value
 
     def __str__(self):
-        return str(self.value) + ' di ' + self.color
+        return str(self.value) + ' of ' + self.color
 
 # class team to store points
 class Team:
@@ -78,9 +78,9 @@ class Player:
 
         # to know if the player uses the AI
         if self.name.upper() == 'PC':
-            self.ai = 1
+            self.ai = True
         else:
-            self.ai = 0
+            self.ai = False
 
     def handCard(self, card):
         self.hand.append(card)

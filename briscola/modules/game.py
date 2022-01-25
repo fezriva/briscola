@@ -1,4 +1,5 @@
 import functions
+import config
 
 # central function, controls the game logic and development
 def main(teams, players):
@@ -13,7 +14,7 @@ def main(teams, players):
                 break
 
     # setup the game
-    # give the cards to the players
+    # give 3 cards to each player
     for i in range(3):
         functions.giveCards(deck, players)
     
@@ -22,10 +23,10 @@ def main(teams, players):
     seme_briscola = briscola.getColor()
     deck.append(briscola)
 
-    rounds = len(deck) / len(players)
+    # calculate number of rounds
+    rounds = int(len(deck) / len(players))
 
     # start game turns
-    # for now while True, maybe change it later
     while rounds > 0:
 
         # create empty table
@@ -33,13 +34,14 @@ def main(teams, players):
 
         # make each player make his choice
         for player in players:
-            choice = functions.move(player, table)
+            choice = functions.play(player, table)
             table.append(choice)
         
         # calculate winner and assign points
         i_winner, points = functions.roundWinner(table, seme_briscola)
         players[i_winner].getTeam().incrementPoints(points)
-        print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
+        if config.CLI:
+            print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
 
         # reorder players list and give them a card each
         for i in range(i_winner):
@@ -54,10 +56,13 @@ def main(teams, players):
     ranking = functions.finalRanking(teams)
 
     for i, team in enumerate(ranking):
-        print('{}. {}'.format(i+1, str(team)))
+        if config.CLI:
+            print('{}. {}'.format(i+1, str(team)))
 
     if ranking[0].getPoints() == ranking[1].getPoints():
-        print('The game resulted in a tie')
+        if config.CLI:
+            print('Tie')
     else:
         ranking[0].teamWins()
-        print('{} won, congratulations!'.format(team.getName()))
+        if config.CLI:
+            print('{} Won!'.format(team.getName()))
