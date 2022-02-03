@@ -38,9 +38,9 @@ class Card:
 # class player
 class Player:
 
-    def __init__(self, name, team):
+    def __init__(self, name):
         # to know if the player uses the AI
-        if self.name.upper() == 'PC':
+        if name.upper() == 'PC':
             self.ai = True
             self.name = random.choice(['Luca', 'Maria', 'Sofia', 'Carlo', 'Giulia', 'Lorenzo'])
         else:
@@ -60,6 +60,9 @@ class Player:
 
     def playerWins(self):
         self.wins += 1
+    
+    def resetPoints(self):
+        self.points = 0
 
     def getName(self):
         return self.name
@@ -68,7 +71,7 @@ class Player:
         return self.points
     
     def __str__(self):
-        return self.name + ' gained: ' + self.points + ' points'
+        return self.name + ' gained: ' + str(self.points) + ' points'
 
 
 # class team

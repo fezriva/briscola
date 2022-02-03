@@ -1,5 +1,5 @@
 def welcome_message():
-    print('\n\nHello!')
+    print('\nHello!')
     print('\nWelcome to a simple briscola interface\n')
 
     # Ask if the player is ready to play
@@ -10,7 +10,7 @@ def welcome_message():
     return p_ready
 
 def players_number():
-    print('The game can be played by 2, 3 or 4 players')
+    print('\nThe game can be played by 2, 3 or 4 players')
 
     p_number = 0
     while p_number not in range(2, 5):
@@ -40,7 +40,6 @@ def printCards(location, cards):
     print(location)
     for i, card in enumerate(cards):
         print('{}. {}'.format(i+1, str(card)))
-    print('\n')
 
 # select a card from player hand
 def selectCard(hand):

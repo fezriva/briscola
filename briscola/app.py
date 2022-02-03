@@ -44,19 +44,21 @@ while player_ready == 'y':
         if config.CLI:
             name = input('Player {}\'s name: '.format(i + 1))
         
-        players[i] = classes.Player(name)
+        players.append(classes.Player(name))
         # team.addPlayer(players[i])
         # team += 1
 
-    while gioco.lower() == 'y':
+    while player_ready.lower() == 'y':
         # call the game function
         game.main(players)
 
         if config.CLI:
-            gioco = cli.new_game()
+            player_ready = cli.new_game()
 
-        if gioco.lower() == 'y':
+        if player_ready.lower() == 'y':
             players.append(players.pop(0))
+            for player in players:
+                player.resetPoints()
 
 if config.CLI:
     print('\n\nSad to see you go, but hope to see you soon!')

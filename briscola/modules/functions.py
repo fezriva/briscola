@@ -1,13 +1,11 @@
-from briscola.modules import config
-import classes
-import cli
+from modules import config, classes, cli
 
 import random
 
 # create deck of cards
 def newDeck():
     colors = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
-    deck = [classes.Card(value, color) for value in range(1, 10) for color in colors]
+    deck = [classes.Card(value, color) for value in range(1, 11) for color in colors]
     random.shuffle(deck)
     return deck
 
@@ -24,6 +22,7 @@ def play(player, table):
         # here will be the code for the MCTS powered AI
         # for now random choice
         card = random.choice(player.hand)
+        
     else:
         if config.CLI:
             cli.printCards('Table:', table)    
@@ -33,6 +32,8 @@ def play(player, table):
         
         card = player.hand.pop(selection)
 
+    if config.CLI:
+        print('{} plays a {}'.format(player.getName(), card))
     return card
 
 # calculate which players wins the round and how many points he/she gets

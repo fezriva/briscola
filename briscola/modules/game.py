@@ -1,5 +1,4 @@
-import functions
-import config
+from modules import functions, config
 
 # central function, controls the game logic and development
 def main(players):
@@ -14,6 +13,9 @@ def main(players):
                 break
 
     # setup the game
+    # determine the total number of rounds to play
+    rounds = int(len(deck) / len(players))
+    
     # give 3 cards to each player
     for i in range(3):
         functions.giveCards(deck, players)
@@ -24,16 +26,21 @@ def main(players):
     deck.append(briscola)
 
     # calculate number of rounds
-    rounds = int(len(deck) / len(players))
+    round = 0
 
     # start game turns
-    while rounds > 0:
+    while round < rounds:
 
         # create empty table
         table = []
 
         # make each player make his choice
         for player in players:
+            if config.CLI:
+                
+                print('\nRound: {}\n{}\'s turn:'.format(round+1, player.getName()))
+                print('Briscola: {}'.format(seme_briscola))
+
             choice = functions.play(player, table)
             table.append(choice)
         
@@ -41,7 +48,7 @@ def main(players):
         round_winner, points = functions.roundWinner(table, seme_briscola)
         players[round_winner].incrementPoints(points)
         if config.CLI:
-            print('{} wins this round and gets {} points'.format(players[round_winner].getName(), points))
+            print('\n{} wins this round and gets {} points'.format(players[round_winner].getName(), points))
 
         # reorder players list and give them a card each
         for i in range(round_winner):
@@ -51,7 +58,7 @@ def main(players):
             functions.giveCards(deck, players)
         
         # decrease rounds value
-        rounds -= 1
+        round += 1
 
     # final ranking and winner declaration
     ranking = functions.finalRanking(players)
