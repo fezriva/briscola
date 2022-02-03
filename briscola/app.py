@@ -15,16 +15,19 @@ while player_ready == 'y':
     if config.CLI:
         players_number = cli.players_number()
 
+    '''
     team = 0
     teams = []
     want_teams = 'n' # default
     if players_number == 4:
         if config.CLI:
             want_teams = cli.teams()
+    '''
 
     # set players
     for i in range(players_number):
 
+        '''
         # assign a team to the new player
         if want_teams == 'y':
             team = team % 2
@@ -34,19 +37,20 @@ while player_ready == 'y':
         # create the Team class
         if team != team.getTeam():
             teams[team] = classes.Team(team)
+        '''
 
         # create player
         name = ''
         if config.CLI:
-            name = input('Team {} - Player {}\'s name: '.format(team, i + 1))
+            name = input('Player {}\'s name: '.format(i + 1))
         
-        players[i] = classes.Player(name,team)
-        team.addPlayer(players[i])
-        team += 1
+        players[i] = classes.Player(name)
+        # team.addPlayer(players[i])
+        # team += 1
 
     while gioco.lower() == 'y':
         # call the game function
-        game.main(teams, players)
+        game.main(players)
 
         if config.CLI:
             gioco = cli.new_game()

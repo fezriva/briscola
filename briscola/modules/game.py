@@ -2,7 +2,7 @@ import functions
 import config
 
 # central function, controls the game logic and development
-def main(teams, players):
+def main(players):
     # create new deck and shuffle it
     deck = functions.newDeck()
 
@@ -38,14 +38,15 @@ def main(teams, players):
             table.append(choice)
         
         # calculate winner and assign points
-        i_winner, points = functions.roundWinner(table, seme_briscola)
-        players[i_winner].getTeam().incrementPoints(points)
+        round_winner, points = functions.roundWinner(table, seme_briscola)
+        players[round_winner].incrementPoints(points)
         if config.CLI:
-            print('{} wins this round and gets {} points'.format(players[i_winner].getName(), points))
+            print('{} wins this round and gets {} points'.format(players[round_winner].getName(), points))
 
         # reorder players list and give them a card each
-        for i in range(i_winner):
+        for i in range(round_winner):
             players.append(players.pop(0))
+
         if len(deck) > 0:
             functions.giveCards(deck, players)
         
@@ -53,16 +54,11 @@ def main(teams, players):
         rounds -= 1
 
     # final ranking and winner declaration
-    ranking = functions.finalRanking(teams)
+    ranking = functions.finalRanking(players)
 
-    for i, team in enumerate(ranking):
+    for i, player in enumerate(ranking):
         if config.CLI:
-            print('{}. {}'.format(i+1, str(team)))
-
-    if ranking[0].getPoints() == ranking[1].getPoints():
-        if config.CLI:
-            print('Tie')
-    else:
-        ranking[0].teamWins()
-        if config.CLI:
-            print('{} Won!'.format(team.getName()))
+            print('{}. {}'.format(i+1, str(player)))
+    
+    if ranking[0].getPoints() > ranking[1].getPoints():
+        ranking[0].playerWins()

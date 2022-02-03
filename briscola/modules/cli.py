@@ -18,12 +18,14 @@ def players_number():
 
     return p_number
 
+'''
 def teams():
     teams = ''
     while teams not in ['y', 'n']:
         teams = input('Do you want to play teams? (y/n) ').lower()
     
     return teams
+'''
 
 def new_game():
     print("\n")
@@ -32,3 +34,17 @@ def new_game():
         p_ready = input('Play again? (y/n) ').lower()
     
     return p_ready
+
+# print a list of cards
+def printCards(location, cards):
+    print(location)
+    for i, card in enumerate(cards):
+        print('{}. {}'.format(i+1, str(card)))
+    print('\n')
+
+# select a card from player hand
+def selectCard(hand):
+    selection = len(hand)
+    while selection not in range(len(hand)):
+        selection = int(input('Select a card from your hand? (1/2/3) ')) - 1
+    return selection
