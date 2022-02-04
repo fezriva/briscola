@@ -21,7 +21,7 @@ def play(player, table):
     if player.ai:
         # here will be the code for the MCTS powered AI
         # for now random choice
-        card = random.choice(player.hand)
+        selection = random.choice(range(len(player.hand)))
         
     else:
         if config.CLI:
@@ -30,7 +30,7 @@ def play(player, table):
 
             selection = cli.selectCard(player.hand)
         
-        card = player.hand.pop(selection)
+    card = player.hand.pop(selection)
 
     if config.CLI:
         print('{} plays a {}'.format(player.getName(), card))
