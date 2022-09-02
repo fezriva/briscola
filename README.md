@@ -12,11 +12,9 @@ If you want to know more about the rules you can find them at this link https://
 
 ## v2.0.0
 
-In progress.
+Created an environment with OpenAI gym to mimic the game dynamics.
+Game is playable from 2 to 4 players (no teams allowed). Human and Random Agents have been created.
 
-### Objectives
+### ONext steps
 
-- Standardise and refactoring code
-- Multiplayer allowed
-- Introduce and train an AI model to play the game
-- Create a simple GUI
+- Create and train Reinforcement Learning agent.

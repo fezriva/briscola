@@ -1,58 +1,56 @@
-import modules.classes as classes
-import modules.config as config
-import modules.game as game
-import modules.cli as cli
+import gym
 
-player_ready = 'n'
+from modules import *
+from agents.human import Human
+from agents.randomAI import RandomAI
 
-if config.CLI:
-    player_ready = cli.welcome_message()
+NUM_EPISODES = 10
 
-while player_ready == 'y':
+playersNameList = ['Kazuma', 'Aqua', 'Megumin', 'Darkness']
+agent_list = [0, 0, 0, 0]
 
-    players = []
-    players_number = 0 # default
-    if config.CLI:
-        players_number = cli.players_number()
+# Human vs Random
 
-    team = 0
-    teams = []
-    want_teams = 'n' # default
-    if players_number == 4:
-        if config.CLI:
-            want_teams = cli.teams()
+agent_list[0] = Human(playersNameList[0], {})
+agent_list[1] = RandomAI(playersNameList[1], {'print_info': False})
+agent_list[2] = RandomAI(playersNameList[2], {'print_info': False})
+agent_list[3] = RandomAI(playersNameList[3], {'print_info': False})
+"""
 
-    # set players
-    for i in range(players_number):
+# Random play
+agent_list[0] = RandomAI(playersNameList[0], {'print_info': True})
+agent_list[1] = RandomAI(playersNameList[1], {'print_info': True})
+agent_list[2] = RandomAI(playersNameList[2], {'print_info': True})
+agent_list[3] = RandomAI(playersNameList[3], {'print_info': True})
+"""
 
-        # assign a team to the new player
-        if want_teams == 'y':
-            team = team % 2
-            if config.CLI:
-                print('Team {}'.format(team+1))
+env = gym.make('Briscola-v2.0')
+env.__init__(playersNameList)
 
-        # create the Team class
-        if team != team.getTeam():
-            teams[team] = classes.Team(team)
+for i_episode in range(NUM_EPISODES):
+    
+    observation = env.reset()
+    
+    while True:
+        env.render()
 
-        # create player
-        name = ''
-        if config.CLI:
-            name = input('Team {} - Player {}\'s name: '.format(team, i + 1))
-        
-        players[i] = classes.Player(name,team)
-        team.addPlayer(players[i])
-        team += 1
+        now_event = observation['event_name']
+        IsBroadcast = observation['broadcast']
+        action = None
+        if IsBroadcast == True:
+            for agent in agent_list:
+                agent.Do_Action(observation)
+        else:
+            playName = observation['data']['playerName']
+            for agent in agent_list:
+                if agent.name == playName:
+                    action = agent.Do_Action(observation)
 
-    while gioco.lower() == 'y':
-        # call the game function
-        game.main(teams, players)
+        observation, reward, done, info = env.step(action)
 
-        if config.CLI:
-            gioco = cli.new_game()
+        if reward != None:
+            print('\nreward: {0}\n'.format(reward))
 
-        if gioco.lower() == 'y':
-            players.append(players.pop(0))
-
-if config.CLI:
-    print('\n\nSad to see you go, but hope to see you soon!')
+        if done:
+            print('\nGame Over!!\n')
+            break
