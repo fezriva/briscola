@@ -1,14 +1,16 @@
-import classes
 import random
+
+from .classes import Player
+from .classes import Card
 
 from gym import Env
 
 # Reinforcement Learning Environment
 class BriscolaEnv(Env):
 
-    def __init__(self, players):
+    def __init__(self, playerNames):
         
-        self.players = [classes.Player(player_name) for player_name in players]
+        self.players = [Player(player_name) for player_name in playerNames]
         self.turn_players = self.players
         self.turn_winner = -1
 
@@ -32,6 +34,7 @@ class BriscolaEnv(Env):
         data = []
         for player in self.players:
             data.append({'playerName': player.name})
+        return data
 
 
     def _getPlayerData(self):
@@ -43,6 +46,7 @@ class BriscolaEnv(Env):
                     'playerPoints': player.points,
                     'playerWins': player.wins
                 })
+        return data
 
 
     def _getCardList(self, position):
@@ -55,7 +59,7 @@ class BriscolaEnv(Env):
     # create deck of cards
     def _createNewDeck(self):
         colors = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
-        deck = [classes.Card(value, color) for color in colors for value in range(1, 11)]
+        deck = [Card(value, color) for color in colors for value in range(1, 11)]
 
         if len(self.players) == 3:
             deck.pop(1)
@@ -85,6 +89,10 @@ class BriscolaEnv(Env):
                         if card.points > high_card.points:
                             high_card = card
                             tmp_winner = i
+                        else:
+                            if card.value > high_card.value:
+                                high_card = card
+                                tmp_winner = i
                     else:
                         high_card = card
                         tmp_winner = i
@@ -117,12 +125,11 @@ class BriscolaEnv(Env):
                 'event_name': self.event,
                 'broadcast': True,
                 'data': {
-                    'players' : self._getPlayerList
+                    'players' : self._getPlayerList()
                 }
             }
         
         for player in self.players:
-            player.points = 0
             player.wins = 0
 
         self.round = 0
@@ -136,10 +143,14 @@ class BriscolaEnv(Env):
 
         self.round += 1
         self.turn_winner = -1
+
+        for player in self.players:
+            player.points = 0
+            
         self.turn_players = self.players
         self.turn_players.append(self.turn_players.pop(0))
 
-        self.deck = self._createNewDeck
+        self.deck = self._createNewDeck()
 
         self.turns = int(len(self.deck) / len(self.players))
         self.turn = 0
@@ -148,7 +159,7 @@ class BriscolaEnv(Env):
 
         # give 3 cards to each player
         for i in range(3):
-            self._giveCards
+            self._giveCards()
         
         # take the briscola card and place it under the deck
         self.briscola = self.deck.pop(0)
@@ -163,7 +174,7 @@ class BriscolaEnv(Env):
                 'event_name': self.event,
                 'broadcast': True,
                 'data': {
-                    'players' : self._getPlayerData
+                    'players' : self._getPlayerData()
                 }
             }
 
@@ -195,17 +206,17 @@ class BriscolaEnv(Env):
         current_player = self.turn_players[self.event_data_for_server['shift']]
 
         # player gives card selection
-        playedCard = current_player.play(action_data['data']['action']['card'])
+        playedCard = current_player.playCard(action_data['data']['action']['card'])
         self.table.append(playedCard)
 
         self.event_data_for_server['shift'] += 1
         self.event = 'ShowTurnAction'
-        self._event_ShowTurnAction
+        self._event_ShowTurnAction()
 
 
     def _event_ShowTurnAction(self):
         self.renderInfo['printFlag'] = True
-        self.renderInfo['Msg'] = "\n" + self._printCurrentTurn
+        self.renderInfo['Msg'] = "\n" + self._printCurrentTurn()
         
         self.event_data_for_client \
         =   { 
@@ -226,7 +237,7 @@ class BriscolaEnv(Env):
 
     def _event_ShowTurnEnd(self):
         
-        points = self._evaluateTurn
+        points = self._evaluateTurn()
                  
         self.event_data_for_client \
         =   { 
@@ -248,11 +259,11 @@ class BriscolaEnv(Env):
         self.renderInfo['Msg'] += 'Table: {0}\n'.format(str([str(card) for card in self.table])[1:-1])
         
         self.table = []
-        for i in range(self.turn_players):
+        for i in range(self.turn_winner):
             self.turn_players.append(self.turn_players.pop(0))
 
         if len(self.deck) > 0:
-            self._giveCards
+            self._giveCards()
 
         self.turn += 1
         if self.turn < self.turns:
@@ -273,7 +284,7 @@ class BriscolaEnv(Env):
                 'event_name' : self.event,
                 'broadcast' : True,
                 'data' : {
-                    'players' : self._getPlayerData,
+                    'players' : self._getPlayerData(),
                     'round': self.round,
                     'round_winner': round_winner.name
                 }
@@ -281,7 +292,7 @@ class BriscolaEnv(Env):
 
         self.renderInfo['printFlag'] = True
         self.renderInfo['Msg'] = '\n*** Round {0} End ***\n'.format(self.round)
-        self.renderInfo['Msg'] = 'Winner: {0}'.format(round_winner)
+        self.renderInfo['Msg'] += 'Winner: {0}\n'.format(round_winner)
         for p in self.players:
             self.renderInfo['Msg'] += '{0}: {1}\n'.format(p.name, p.points)
         
@@ -309,7 +320,7 @@ class BriscolaEnv(Env):
                 'event_name' : self.event,
                 'broadcast' : True,
                 'data' : {
-                    "players" : self._getPlayerData,
+                    "players" : self._getPlayerData(),
                     'game_winner': winner.name
                 }
             }
@@ -336,7 +347,7 @@ class BriscolaEnv(Env):
         
         return observation
                 
-    def render(self):
+    def render(self, mode = "human"):
         if self.renderInfo['printFlag']:
             print(self.renderInfo['Msg'])
             self.renderInfo['printFlag'] = False
@@ -350,7 +361,7 @@ class BriscolaEnv(Env):
         if self.event == 'NewRound':
             self._event_NewRound()
 
-        elif self.event == 'PlayTrurn' or self.event == 'ShowTurnAction' or self.event == 'ShowTurnEnd':
+        elif self.event == 'PlayTurn' or self.event == 'ShowTurnAction' or self.event == 'ShowTurnEnd':
             if action_data != None and action_data['event_name'] == "PlayTurn_Action":
                 self._event_PlayTurn_Action(action_data)
             else:

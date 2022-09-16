@@ -23,12 +23,6 @@ class Card:
         else:
             self.points = 0
 
-    def getPoints(self):
-        return self.points
-
-    def getValue(self):
-        return self.value
-
     def __str__(self):
         return str(self.value) + ' of ' + self.suit
 
@@ -37,13 +31,7 @@ class Card:
 class Player:
 
     def __init__(self, name):
-        # to know if the player uses the AI
-        if name.upper() == 'PC':
-            self.ai = True
-            self.name = random.choice(['Luca', 'Maria', 'Sofia', 'Carlo', 'Giulia', 'Lorenzo'])
-        else:
-            self.ai = False
-            self.name = name
+        self.name = name
         
         self.hand = []
         self.points = 0
@@ -64,12 +52,6 @@ class Player:
     
     def resetPoints(self):
         self.points = 0
-
-    def getName(self):
-        return self.name
-
-    def getPoints(self):
-        return self.points
 
     def __str__(self):
         return self.name + ' gained: ' + str(self.points) + ' points'

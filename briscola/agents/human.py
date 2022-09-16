@@ -13,7 +13,7 @@ class Human:
         elif observation['event_name'] == 'PlayTurn':
             print(observation)
             hand = observation['data']['hand']
-            choose_card = input('choose card: ')
+            choose_card = int(input('choose card: ')) - 1
 
             return {
                     "event_name" : "PlayTurn_Action",
