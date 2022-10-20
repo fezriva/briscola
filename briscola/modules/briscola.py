@@ -1,9 +1,11 @@
-import random
-
 from .classes import Player
 from .classes import Card
 
 from gym import Env
+
+import random
+
+suits = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
 
 # Reinforcement Learning Environment
 class BriscolaEnv(Env):
@@ -52,14 +54,23 @@ class BriscolaEnv(Env):
     def _getCardList(self, position):
         data = []
         for card in position:
-            data.append(str(card))
+            data.append(card._toArray())
         return data
 
+    def _getStateList(self, player_cards=[]):
+        data = []
+
+        data.append(self.briscola._toArray() + [0])
+        for card in self.table:
+            data.append(card._toArray() + [1])
+        for card in player_cards:
+            data.append(card._toArray() + [2])
+            
+        return data
 
     # create deck of cards
     def _createNewDeck(self):
-        colors = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
-        deck = [Card(value, color) for color in colors for value in range(1, 11)]
+        deck = [Card(value, suit) for suit in suits for value in range(1, 11)]
 
         if len(self.players) == 3:
             deck.pop(1)
@@ -196,8 +207,9 @@ class BriscolaEnv(Env):
                     'playerName': current_player.name,
                     'hand': self._getCardList(current_player.hand),
                     'turn': self.turn + 1,
-                    'briscola': str(self.briscola),
-                    'table': self._getCardList(self.table)
+                    'briscola': self.briscola._toArray(),
+                    'table': self._getCardList(self.table),
+                    'state': self._getStateList(current_player.hand)
                 }
             }
 
@@ -224,7 +236,7 @@ class BriscolaEnv(Env):
                 'broadcast' : True,
                 'data' : {
                     'turn': self.turn + 1,
-                    'briscola': str(self.briscola),
+                    'briscola': self.briscola._toArray(),
                     'table': self._getCardList(self.table)
                 }
             }
@@ -238,6 +250,7 @@ class BriscolaEnv(Env):
     def _event_ShowTurnEnd(self):
         
         points = self._evaluateTurn()
+        winner = self.turn_players[self.turn_winner].name
                  
         self.event_data_for_client \
         =   { 
@@ -245,16 +258,17 @@ class BriscolaEnv(Env):
                 'broadcast' : True,
                 'data' : {
                     'turn': self.turn + 1,
-                    'briscola': str(self.briscola),
+                    'briscola': self.briscola._toArray(),
                     'table': self._getCardList(self.table),
-                    'winner': self.turn_players[self.turn_winner].name,
-                    'points': points
+                    'winner': winner,
+                    'points': points,
+                    'state': self._getStateList()
                 }
             }
 
         self.renderInfo['printFlag'] = True
         self.renderInfo['Msg'] = '\n*** Turn {0} ***\n'.format(self.turn+1)
-        self.renderInfo['Msg'] += 'Winner: {0}\n'.format(self.turn_players[self.turn_winner].name)
+        self.renderInfo['Msg'] += 'Winner: {0}\n'.format(winner)
         self.renderInfo['Msg'] += 'Points: {0}\n'.format(points)
         self.renderInfo['Msg'] += 'Table: {0}\n'.format(str([str(card) for card in self.table])[1:-1])
         
@@ -272,6 +286,14 @@ class BriscolaEnv(Env):
         else:
             self.event = 'RoundEnd'
             self.event_data_for_server = {}
+
+        reward = {}
+        for player in self.players:
+            if player.name == winner:
+                reward[player.name] = points
+            else:
+                reward[player.name] = 0
+        return reward
 
 
     def _event_RoundEnd(self):
@@ -304,11 +326,6 @@ class BriscolaEnv(Env):
         else:
             self.event = 'GameOver'
             self.event_data_for_server = {}
-        
-        reward = {}
-        for player in self.players:
-            reward[player.name] = player.points
-        return reward
 
 
     def _event_GameOver(self):
@@ -368,10 +385,10 @@ class BriscolaEnv(Env):
                 if self.event == 'PlayTurn':
                     self._event_PlayTurn()
                 elif self.event == 'ShowTurnEnd':
-                    self._event_ShowTurnEnd()
+                    reward = self._event_ShowTurnEnd()
         
         elif self.event == 'RoundEnd':
-            reward = self._event_RoundEnd()
+            self._event_RoundEnd()
             
         elif self.event == 'GameOver':
             self._event_GameOver()
