@@ -1,17 +1,18 @@
-import random
 from datetime import datetime
+import random
 
 class RandomAI:
     def __init__(self, name, params = None):
         random.seed(datetime.now())
         self.name = name
+        self.type = 'random'
         
         if params != None:
             self.print_info = params['print_info']
         else:
             self.print_info = False
     
-    def Do_Action(self, observation):
+    def act(self, observation):
         if observation['event_name'] == 'GameStart':
             if self.print_info:
                 print(observation)

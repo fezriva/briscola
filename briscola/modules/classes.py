@@ -23,6 +23,9 @@ class Card:
         else:
             self.points = 0
 
+    def _toArray(self):
+        return [self.suit, self.value]
+
     def __str__(self):
         return str(self.value) + ' of ' + self.suit
 

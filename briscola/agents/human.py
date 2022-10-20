@@ -1,8 +1,9 @@
 class Human:
     def __init__(self, name, params):
         self.name = name
+        self.type = 'human'
     
-    def Do_Action(self, observation):
+    def act(self, observation):
         if observation['event_name'] == 'GameStart':
             print(observation)
         elif observation['event_name'] == 'NewRound':
