@@ -28,7 +28,7 @@ class RandomAI:
                 print(observation)
 
             hand = observation['data']['hand']
-            choose_card = random.choice(range(len(observation['data']['hand'])))
+            choose_card = random.randrange(len(observation['data']['hand']))
             if self.print_info:
                 print(self.name, ' choose card: ', choose_card)
 
