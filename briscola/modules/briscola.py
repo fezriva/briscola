@@ -5,8 +5,6 @@ from gym import Env
 
 import random
 
-suits = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
-
 # Reinforcement Learning Environment
 class BriscolaEnv(Env):
 
@@ -60,17 +58,17 @@ class BriscolaEnv(Env):
     def _getStateList(self, player_cards=[]):
         data = []
 
-        data.append(self.briscola._toArray() + [0])
+        data.append(self.briscola._toNumerical() + [0])
         for card in self.table:
-            data.append(card._toArray() + [1])
+            data.append(card._toNumerical() + [1])
         for card in player_cards:
-            data.append(card._toArray() + [2])
+            data.append(card._toNumerical() + [2])
             
         return data
 
     # create deck of cards
     def _createNewDeck(self):
-        deck = [Card(value, suit) for suit in suits for value in range(1, 11)]
+        deck = [Card(value, suit) for suit in range(4) for value in range(1, 11)]
 
         if len(self.players) == 3:
             deck.pop(1)
@@ -101,9 +99,10 @@ class BriscolaEnv(Env):
                             high_card = card
                             tmp_winner = i
                         else:
-                            if card.value > high_card.value:
-                                high_card = card
-                                tmp_winner = i
+                            if card.points == high_card.points:
+                                if card.value > high_card.value:
+                                    high_card = card
+                                    tmp_winner = i
                     else:
                         high_card = card
                         tmp_winner = i
@@ -112,6 +111,11 @@ class BriscolaEnv(Env):
                         if card.points > high_card.points:
                             high_card = card
                             tmp_winner = i
+                        else:
+                            if card.points == high_card.points:
+                                if card.value > high_card.value:
+                                    high_card = card
+                                    tmp_winner = i
             turn_points += card.points
 
         self.turn_winner = tmp_winner

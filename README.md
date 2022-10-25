@@ -15,13 +15,16 @@ If you want to know more about the rules you can find them at this link https://
 
 Created an environment with OpenAI gym to mimic the game dynamics.
 Game is playable from 2 to 4 players (no teams allowed).
-Human and Random Agents have been created.
+Human, Random and Learning Agents have been created.
+Training of 4 player Learning DQN Agent is done (run the code with less players to train the others).
 
 ### Next steps
 
-- Create and train Reinforcement Learning Agent
+- Better Training function
+- Bug fixing: AI can't choose ooh range
 
 ## References
 
 - https://github.com/zmcx16/OpenAI-Gym-Hearts
 - https://github.com/nicknochnack/OpenAI-Reinforcement-Learning-with-Custom-Environment
+- https://www.dominodatalab.com/blog/deep-reinforcement-learning

@@ -2,12 +2,14 @@
 # init and string functions
 import random
 
+suits = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
 
 ### TODO change all colors into suits
 class Card:
     def __init__(self, value, suit):
         self.value = value
-        self.suit = suit
+        self.suit = suits[suit]
+        self.suit_numerical = suit
         
         # assign points to each value
         if self.value == 1:
@@ -25,6 +27,9 @@ class Card:
 
     def _toArray(self):
         return [self.suit, self.value]
+    
+    def _toNumerical(self):
+        return [self.suit_numerical, self.value]
 
     def __str__(self):
         return str(self.value) + ' of ' + self.suit

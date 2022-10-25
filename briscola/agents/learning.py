@@ -28,11 +28,11 @@ class DQNAgent:
  
     def _build_model(self):
         model = models.Sequential()
-        model.add(layers.Dense(12, activation='relu', input_shape=self.state_size))
+        model.add(layers.Dense(16, activation='relu', input_shape=self.state_size))
         model.add(layers.LSTM(16))
         model.add(layers.Dense(16, activation='relu'))
         model.add(layers.Dense(self.action_size, activation='linear'))
-        model.compile(loss="mse", optimizer = optimizers.adam_v2.Adam(lr=self.learning_rate))
+        model.compile(loss="mse", optimizer = optimizers.adam_v2.Adam(learning_rate=self.learning_rate))
         return model
  
     def remember(self, state, action, reward, next_state, done): 
@@ -42,12 +42,16 @@ class DQNAgent:
         minibatch = random.sample(self.memory, batch_size)
 
         for state, action, reward, next_state, done in minibatch:
-            target = reward # if done 
-            if not done:
-                target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
-            target_f = self.model.predict(state)
-            target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0) 
+            
+            target_f = self.model.predict([state])
+
+            # maybe make this a little better
+            if reward > 0:
+                target_f[0][action] = 1
+            else:
+                target_f[0][action] = 0
+
+            self.model.fit(np.array([state]), np.array(target_f), epochs=1, verbose=0) 
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -71,9 +75,11 @@ class DQNAgent:
             state = observation['data']['state']
 
             if np.random.rand() <= self.epsilon:
-                choose_card = random.randrange(self.action_size)
+                choose_card = random.randrange(len(observation['data']['hand']))
             else:
-                choose_card = self.model.predict(state)[0]
+                pred = self.model.predict([state])
+                choose_card = np.argmax(pred)
+
 
             return {
                     "event_name" : "PlayTurn_Action",
