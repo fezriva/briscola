@@ -16,9 +16,9 @@ from agents.dqn_v3 import DQNv3Agent as DQNv3
 
 # Configure each player - types: 'DQNv1', 'DQNv2', 'DQNv3', 'Random'
 PLAYERS = [
-    {'type': 'DQNv3', 'name': 'Player 1'},
+    {'type': 'DQNv1', 'name': 'Player 1'},
     {'type': 'DQNv2', 'name': 'Player 2'},
-    {'type': 'Random', 'name': 'Player 3'},
+    {'type': 'DQNv3', 'name': 'Player 3'},
     {'type': 'Random', 'name': 'Player 4'}
 ]
 
@@ -30,14 +30,14 @@ BATCH_SIZE = 32
 
 # Share weights between agents of same type (self-play style)
 # If True, all DQNv2 agents share one model, all DQNv3 share another
-SHARE_WEIGHTS = True
+SHARE_WEIGHTS = False
 
 # Higher exploration for more diverse experiences
-EPSILON_OVERRIDE = 0.3  # Set to 0.3 for 30% exploration, None to use default
+EPSILON_OVERRIDE = None  # Set to 0.3 for 30% exploration, None to use default
 
 # Resume training from existing weights (set to None to start fresh)
 # 'auto' will find latest checkpoint for each agent type
-RESUME_MODE = 'auto'  # 'auto', None, or dict with paths
+RESUME_MODE = None  # 'auto', None, or dict with paths
 
 # Model paths for resuming (used if RESUME_MODE is dict)
 # Example: RESUME_MODE = {
@@ -127,10 +127,14 @@ if SHARE_WEIGHTS:
                 main_agent = shared_agents[agent_type]
                 agent = create_agent(p)
                 
-                # Share model, target_model, and memory
+                # Share model, target_model, memory
                 agent.model = main_agent.model
                 agent.target_model = main_agent.target_model
                 agent.memory = main_agent.memory
+                
+                # Mark as shadow agent
+                agent._is_shadow = True
+                agent._main_agent = main_agent
                 
                 agent_list.append(agent)
         else:
@@ -148,20 +152,12 @@ else:
     # Normal mode - separate weights
     agent_list = [create_agent(p) for p in PLAYERS]
 
-# Override epsilon if specified
-if EPSILON_OVERRIDE is not None:
-    for agent in agent_list:
-        if agent.type == 'learning':
-            agent.epsilon = EPSILON_OVERRIDE
-    print(f"Epsilon override: {EPSILON_OVERRIDE}")
-    print()
-
 # Determine output directory (only used when not sharing weights)
 if SHARE_WEIGHTS:
     output_dir = None  # Each agent type saves to its own folder
 else:
-    output_dir = get_output_dir(PLAYERS, share_weights=SHARE_WEIGHTS)
-    os.makedirs(output_dir + '/4_players/', exist_ok=True)
+    # When not sharing, still save each agent type to its own folder
+    output_dir = None
 
 # Load existing weights if resume is enabled
 if RESUME_MODE is not None:
@@ -235,6 +231,17 @@ if RESUME_MODE is not None:
                     print(f"✗ No weights found for {agent.name}, starting fresh")
     print()
 
+# Override epsilon if specified (AFTER resume so it applies to everyone)
+if EPSILON_OVERRIDE is not None:
+    print(f"Overriding epsilon to {EPSILON_OVERRIDE} for all learning agents")
+    for agent in agent_list:
+        if agent.type == 'learning':
+            agent.epsilon = EPSILON_OVERRIDE
+            # Also update main agent if this is a shadow
+            if hasattr(agent, '_is_shadow') and hasattr(agent, '_main_agent'):
+                agent._main_agent.epsilon = EPSILON_OVERRIDE
+    print()
+
 env = gym.make('Briscola-v2', playerNames=player_names, disable_env_checker=True)
 
 # Statistics tracking
@@ -248,13 +255,11 @@ print(f"Episodes: {NUM_EPISODES}")
 print(f"Batch size: {BATCH_SIZE}")
 print(f"Save frequency: every {SAVE_FREQUENCY} episodes")
 
-if SHARE_WEIGHTS:
-    print("Output directories:")
-    agent_types = set([p['type'] for p in PLAYERS if p['type'] in ['DQNv1', 'DQNv2', 'DQNv3']])
-    for agent_type in sorted(agent_types):
-        print(f"  {agent_type}: learning/model_output_{agent_type.lower()}/4_players/")
-else:
-    print(f"Output directory: {output_dir}")
+# Show output directories for each agent type
+print("Output directories:")
+agent_types = set([p['type'] for p in PLAYERS if p['type'] in ['DQNv1', 'DQNv2', 'DQNv3']])
+for agent_type in sorted(agent_types):
+    print(f"  {agent_type}: learning/model_output_{agent_type.lower()}/4_players/")
 
 print()
 print("Players:")
@@ -352,7 +357,12 @@ for i_episode in range(NUM_EPISODES):
                 
                 avg_reward = sum(recent_rewards) / len(recent_rewards)
                 win_rate = sum(recent_wins) / len(recent_wins) * 100
-                epsilon = agent.epsilon
+                
+                # Get epsilon from main agent if sharing weights
+                if hasattr(agent, '_main_agent'):
+                    epsilon = agent._main_agent.epsilon
+                else:
+                    epsilon = agent.epsilon
                 
                 print(f"  {agent.name}:")
                 print(f"    Avg Reward: {avg_reward:.2f}")
@@ -363,26 +373,18 @@ for i_episode in range(NUM_EPISODES):
     
     # Save models periodically
     if (i_episode + 1) % SAVE_FREQUENCY == 0:
-        if SHARE_WEIGHTS:
-            # Save each agent type to its own folder
-            saved_types = set()
-            for idx, (agent, config) in enumerate(zip(agent_list, PLAYERS)):
-                if agent.type == 'learning' and config['type'] not in saved_types:
-                    agent_type = config['type'].lower()
-                    type_output_dir = f'learning/model_output_{agent_type}'
-                    os.makedirs(type_output_dir + '/4_players/', exist_ok=True)
-                    
-                    save_path = type_output_dir + '/4_players/' + f'agent0_weights_{i_episode+1:04d}.weights.h5'
-                    agent.save(save_path)
-                    print(f"✓ Saved {config['type']}: {save_path}")
-                    saved_types.add(config['type'])
-        else:
-            # Save each agent separately to output_dir
-            for idx, agent in enumerate(agent_list):
-                if agent.type == 'learning':
-                    save_path = output_dir + '/4_players/' + f'agent{idx}_weights_{i_episode+1:04d}.weights.h5'
-                    agent.save(save_path)
-                    print(f"✓ Saved {agent.name}: {save_path}")
+        # Always save each agent type to its own folder
+        saved_types = set()
+        for idx, (agent, config) in enumerate(zip(agent_list, PLAYERS)):
+            if agent.type == 'learning' and config['type'] not in saved_types:
+                agent_type = config['type'].lower()
+                type_output_dir = f'learning/model_output_{agent_type}'
+                os.makedirs(type_output_dir + '/4_players/', exist_ok=True)
+                
+                save_path = type_output_dir + '/4_players/' + f'agent0_weights_{i_episode+1:04d}.weights.h5'
+                agent.save(save_path)
+                print(f"✓ Saved {config['type']}: {save_path}")
+                saved_types.add(config['type'])
         print()
 
 # Save final models
@@ -390,26 +392,18 @@ print("="*60)
 print("SAVING FINAL MODELS")
 print("="*60)
 
-if SHARE_WEIGHTS:
-    # Save each agent type to its own folder
-    saved_types = set()
-    for idx, (agent, config) in enumerate(zip(agent_list, PLAYERS)):
-        if agent.type == 'learning' and config['type'] not in saved_types:
-            agent_type = config['type'].lower()
-            type_output_dir = f'learning/model_output_{agent_type}'
-            os.makedirs(type_output_dir + '/4_players/', exist_ok=True)
-            
-            final_path = type_output_dir + '/4_players/' + f'agent0_weights_final.weights.h5'
-            agent.save(final_path)
-            print(f"✓ {config['type']}: {final_path}")
-            saved_types.add(config['type'])
-else:
-    # Save each agent separately to output_dir
-    for idx, agent in enumerate(agent_list):
-        if agent.type == 'learning':
-            final_path = output_dir + '/4_players/' + f'agent{idx}_weights_final.weights.h5'
-            agent.save(final_path)
-            print(f"✓ {agent.name}: {final_path}")
+# Always save each agent type to its own folder
+saved_types = set()
+for idx, (agent, config) in enumerate(zip(agent_list, PLAYERS)):
+    if agent.type == 'learning' and config['type'] not in saved_types:
+        agent_type = config['type'].lower()
+        type_output_dir = f'learning/model_output_{agent_type}'
+        os.makedirs(type_output_dir + '/4_players/', exist_ok=True)
+        
+        final_path = type_output_dir + '/4_players/' + f'agent0_weights_final.weights.h5'
+        agent.save(final_path)
+        print(f"✓ {config['type']}: {final_path}")
+        saved_types.add(config['type'])
 
 print()
 print("="*60)
@@ -425,10 +419,16 @@ for agent in agent_list:
         overall_avg_reward = sum(episode_rewards[agent.name]) / len(episode_rewards[agent.name])
         overall_win_rate = sum(episode_wins[agent.name]) / len(episode_wins[agent.name]) * 100
         
+        # Get epsilon from main agent if sharing weights
+        if hasattr(agent, '_main_agent'):
+            final_epsilon = agent._main_agent.epsilon
+        else:
+            final_epsilon = agent.epsilon
+        
         print(f"\n{agent.name}:")
         print(f"  Average Reward: {overall_avg_reward:.2f}")
         print(f"  Win Rate: {overall_win_rate:.1f}%")
-        print(f"  Final Epsilon: {agent.epsilon:.3f}")
+        print(f"  Final Epsilon: {final_epsilon:.3f}")
 
 print("\n" + "="*60)
 print("\nTo test the trained agents, run:")

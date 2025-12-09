@@ -156,10 +156,6 @@ class DQNv3Agent:
                         print(f"{self.name}'s turn")
                         print(f"  Exploiting: Q-values={valid_q_values}, chose card {action_index}")
                 
-                # Decay epsilon
-                if self.epsilon > self.epsilon_min:
-                    self.epsilon *= self.epsilon_decay
-                
                 # Return action
                 return {
                     'event_name': 'PlayTurn_Action',
@@ -222,6 +218,10 @@ class DQNv3Agent:
             epochs=1,
             verbose=0
         )
+        
+        # Decay epsilon after training
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
         
         # Update target network periodically
         self.training_count += 1

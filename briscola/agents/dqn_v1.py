@@ -1,13 +1,17 @@
 import tensorflow as tf
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress TensorFlow warnings
+tf.get_logger().setLevel('ERROR')
+
+from datetime import datetime
 import numpy as np
 import collections
 import random
-from datetime import datetime
 
 
 class DQNAgent:
     def __init__(self,  name, params = None):
-        random.seed()
+        random.seed()  # Use system time automatically
         self.name = name
         self.type = 'learning'
         
@@ -27,13 +31,11 @@ class DQNAgent:
         self.model = self._build_model()
  
     def _build_model(self):
-        model = tf.keras.Sequential([
-            tf.keras.layers.Input(shape=self.state_size),
-            tf.keras.layers.Dense(16, activation='relu'),
-            tf.keras.layers.LSTM(16),
-            tf.keras.layers.Dense(16, activation='relu'),
-            tf.keras.layers.Dense(self.action_size, activation='linear')
-        ])
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Dense(16, activation='relu', input_shape=self.state_size))
+        model.add(tf.keras.layers.LSTM(16))
+        model.add(tf.keras.layers.Dense(16, activation='relu'))
+        model.add(tf.keras.layers.Dense(self.action_size, activation='linear'))
         model.compile(loss="mse", optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
         return model
  
@@ -45,7 +47,7 @@ class DQNAgent:
 
         for state, action, reward, next_state, done in minibatch:
             
-            target_f = self.model.predict(np.array([state]))
+            target_f = self.model.predict(np.array([state]), verbose=0)
 
             # maybe make this a little better
             if reward > 0:
@@ -53,7 +55,7 @@ class DQNAgent:
             else:
                 target_f[0][action] = 0
 
-            self.model.fit(np.array([state]), np.array(target_f), epochs=1, verbose=0)
+            self.model.fit(np.array([state]), np.array(target_f), epochs=1, verbose=0) 
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -75,14 +77,15 @@ class DQNAgent:
                 print(observation)
 
             state = observation['data']['state']
+            hand_size = len(observation['data']['hand'])
 
             if np.random.rand() <= self.epsilon:
-                choose_card = random.randrange(len(observation['data']['hand']))
+                choose_card = random.randrange(hand_size)
             else:
-                pred = self.model.predict(np.array([state]))
-                # Prendi solo le probabilità per le carte disponibili
-                valid_preds = pred[0][:len(observation['data']['hand'])]
-                choose_card = np.argmax(valid_preds)
+                pred = self.model.predict(np.array([state]), verbose=0)
+                # Only consider valid actions (cards in hand)
+                valid_pred = pred[0][:hand_size]
+                choose_card = np.argmax(valid_pred)
 
 
             return {
