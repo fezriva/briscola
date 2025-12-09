@@ -3,7 +3,7 @@ import random
 
 class RandomAI:
     def __init__(self, name, params = None):
-        random.seed(datetime.now())
+        random.seed()
         self.name = name
         self.type = 'random'
         

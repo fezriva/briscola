@@ -1,13 +1,13 @@
-from tensorflow.python.keras import models, layers, optimizers
-from datetime import datetime
+import tensorflow as tf
 import numpy as np
 import collections
 import random
+from datetime import datetime
 
 
 class DQNAgent:
     def __init__(self,  name, params = None):
-        random.seed(datetime.now())
+        random.seed()
         self.name = name
         self.type = 'learning'
         
@@ -27,12 +27,14 @@ class DQNAgent:
         self.model = self._build_model()
  
     def _build_model(self):
-        model = models.Sequential()
-        model.add(layers.Dense(16, activation='relu', input_shape=self.state_size))
-        model.add(layers.LSTM(16))
-        model.add(layers.Dense(16, activation='relu'))
-        model.add(layers.Dense(self.action_size, activation='linear'))
-        model.compile(loss="mse", optimizer = optimizers.adam_v2.Adam(learning_rate=self.learning_rate))
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=self.state_size),
+            tf.keras.layers.Dense(16, activation='relu'),
+            tf.keras.layers.LSTM(16),
+            tf.keras.layers.Dense(16, activation='relu'),
+            tf.keras.layers.Dense(self.action_size, activation='linear')
+        ])
+        model.compile(loss="mse", optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
         return model
  
     def remember(self, state, action, reward, next_state, done): 
@@ -43,7 +45,7 @@ class DQNAgent:
 
         for state, action, reward, next_state, done in minibatch:
             
-            target_f = self.model.predict([state])
+            target_f = self.model.predict(np.array([state]))
 
             # maybe make this a little better
             if reward > 0:
@@ -51,7 +53,7 @@ class DQNAgent:
             else:
                 target_f[0][action] = 0
 
-            self.model.fit(np.array([state]), np.array(target_f), epochs=1, verbose=0) 
+            self.model.fit(np.array([state]), np.array(target_f), epochs=1, verbose=0)
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -77,8 +79,10 @@ class DQNAgent:
             if np.random.rand() <= self.epsilon:
                 choose_card = random.randrange(len(observation['data']['hand']))
             else:
-                pred = self.model.predict([state])
-                choose_card = np.argmax(pred)
+                pred = self.model.predict(np.array([state]))
+                # Prendi solo le probabilità per le carte disponibili
+                valid_preds = pred[0][:len(observation['data']['hand'])]
+                choose_card = np.argmax(valid_preds)
 
 
             return {

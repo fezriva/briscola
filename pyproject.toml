@@ -1,0 +1,36 @@
+[project]
+name = "briscola-rl"
+version = "0.2.0"
+description = "Reinforcement Learning environment for Briscola card game"
+requires-python = ">=3.9"
+dependencies = [
+    # Core RL dependencies
+    "gymnasium>=0.29.0",           # Modern gym replacement
+    "numpy>=1.24.0,<2.0.0",        # Numerical computing
+    
+    # Deep Learning (keep TensorFlow for compatibility with existing DQN agent)
+    "tensorflow>=2.15.0",          # Your existing agent uses Keras/TF
+    
+    # Optional: Stable-Baselines3 for modern RL algorithms
+    "stable-baselines3>=2.2.0",    # Modern RL library
+    "torch>=2.0.0",                # Required by SB3
+    
+    # Monitoring and visualization
+    "tensorboard>=2.15.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ipython>=8.0.0",
+    "jupyter>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_backend"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["briscola*"]
